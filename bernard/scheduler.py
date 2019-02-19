@@ -18,7 +18,7 @@ def user_duration_to_seconds(value):
         'h': 3600,
         'd': 86400,
         'w': 604800,
-        'y': 31536000 
+        'y': 31536000
     }
 
     seconds = 0
@@ -67,15 +67,15 @@ def set_future_task(**kwargs):
 async def scheduler_check_for_work():
     await discord.bot.wait_until_ready()
     while not discord.bot.is_closed:
-        logger.info("Starting background task scheduler_check_for_work()")
+        logger.debug("Starting background task scheduler_check_for_work()")
         now = int(time.time())
 
         database.cursor.execute('SELECT * FROM scheduled_tasks WHERE exec_run=0 AND time_scheduled < %s', (now,))
         dbwork = database.cursor.fetchall()
 
         if len(dbwork) == 0:
-            logger.info("scheduler_check_for_work() found no work due, going back to sleep for 60 seconds")
-            await asyncio.sleep(60)
+            logger.debug("scheduler_check_for_work() found no work due, going back to sleep for {} seconds".format(config.cfg['scheduler']['check_rate_seconds']))
+            await asyncio.sleep(config.cfg['scheduler']['check_rate_seconds'])
             continue
         else:
             logger.info("scheduler_check_for_work() found {} jobs due".format(len(dbwork)))
@@ -88,7 +88,7 @@ async def scheduler_check_for_work():
             else:
                 logger.error("ERROR: Unknown work type. POST_MESSAGE, UNBAN_MEMBER are currently supported")
 
-        await asyncio.sleep(60)
+        await asyncio.sleep(config.cfg['scheduler']['check_rate_seconds'])
 
 async def scheduler_mark_work_done(work):
     now = int(time.time())

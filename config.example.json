@@ -34,6 +34,7 @@
 
 	"scheduler":{
 		"enable":1,
+		"check_rate_seconds":10,
 		"time_range_min_mins":1,
 		"time_range_max_mins":525600
 	},
