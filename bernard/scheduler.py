@@ -3,37 +3,32 @@ import bernard.common as common
 import bernard.discord as discord
 import bernard.journal as journal
 import bernard.database as database
-import logging
-import time
 import asyncio
+import logging
+import re
+import time
 
 logger = logging.getLogger(__name__)
 logger.info("loading...")
 
 def user_duration_to_seconds(value):
-    #figure out the conversation for the duration
-    try:
-        duration_value = value[-1:]
-        duration_length = int(value[:-1])
-    except ValueError:
+    time_mapping = {
+        's': 1,
+        'm': 60,
+        'h': 3600,
+        'd': 86400,
+        'w': 604800,
+        'y': 31536000 
+    }
+
+    seconds = 0
+    for match in re.findall('(\d+)(s|m|h|d|w|y)', value, re.IGNORECASE):
+        seconds += int(match[0]) * time_mapping[match[1].lower()]
+
+    if seconds == 0:
         return False
 
-    if duration_value == "s":
-        duration_length = duration_length * 1
-    elif duration_value == "m":
-        duration_length = duration_length * 60
-    elif duration_value == "h":
-        duration_length = duration_length * 60 * 60
-    elif duration_value == "d":
-        duration_length = duration_length * 24 * 60 * 60
-    elif duration_value == "w":
-        duration_length = duration_length * 7 * 24 * 60 * 60
-    elif duration_value == "y":
-        duration_length = duration_length * 365 * 24 * 60 * 60
-    else:
-        return None
-
-    return duration_length
+    return seconds
 
 def verify_reminder_duration_length(value):
     #check if the length is within bounds
