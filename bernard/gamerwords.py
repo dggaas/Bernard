@@ -14,11 +14,10 @@ def regex_scoring_msg(msg):
     # https://www.reddit.com/r/modhelp/comments/4g8lpo/would_you_be_willing_to_share_your_slur_filter_if/
     regex_mapping = {
         'testing_gamerword_filter_test': 500,
-        'nigg?s?|nigg?[aeoi]s?': 200,
-        '(ph|f)agg?s?([e0aio]ts?|oted|otry)|fag': 100,
-        'k[iy]+kes?|sheckel': 100,
+        'n1gga|n1gger|nigg3r|n1gg3r|nigga|niggah|niggas|niggaz|nigger|niggers': 200,
+        'fag|fagging|faggitt|faggot|faggs|fagot|fagots|fags': 100,
+        'k[iy]+kes?|goyim': 100,
         'tranny': 100,
-        'goyim|jew': 80,
         'retar(d|ded|ds)': 80,
         'autis[tm]?': 50,
         'kill\\s*your(self|selves)|kys': 20
@@ -38,10 +37,13 @@ def regex_scoring_msg(msg):
 def member_age_scoring(age):
     # in minutes, format: age, multiplier
     multiplier_map = {
-        60: 2,
-        360: 1.5,
-        1440: 1.25,
-        4320: 1.1,
+        60: 5, # 60m
+        360: 4, # 6 hours
+        1440: 3, # 1 day
+        4320: 3.5, # 3 days
+        10080: 2, # 1 week
+        20160: 1.5, # 2 weeks
+        40320: 1.15 # 1 month
     }
 
     for map_age, weight in multiplier_map.items():
