@@ -28,6 +28,7 @@ import bernard.invites
 import bernard.housekeeping
 import bernard.antispam
 import bernard.regulator
+import bernard.gamerwords
 
 #entitlement modules
 import bernard.subscriber

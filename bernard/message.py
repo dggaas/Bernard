@@ -3,7 +3,8 @@ import bernard.common as common
 import bernard.discord as discord
 import bernard.auditing as auditing
 import bernard.analytics as analytics
-import bernard.antispam as antispam
+#import bernard.antispam as antispam
+import bernard.gamerwords as gamerwords
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,9 +29,9 @@ async def on_message(message):
 		await discord.bot.process_commands(message)
 		return
 
-	#scan the message for spammy content
-	antispam_obj = antispam.antispam_auditor(message)
-	antispam_obj.score()
+	# start looking for gamer words / banned slurs
+	if common.isDiscordRegulator(message.author) is False:
+		await gamerwords.slur_filter(message)
 
 	#get some basic stats of message sending
 	analytics.setMessageCounter(message)
