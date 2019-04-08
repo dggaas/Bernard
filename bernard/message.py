@@ -5,6 +5,7 @@ import bernard.auditing as auditing
 import bernard.analytics as analytics
 #import bernard.antispam as antispam
 import bernard.gamerwords as gamerwords
+import bernard.regulator as regulator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ async def on_message(message):
 		return
 
 	# start looking for gamer words / banned slurs
-	if common.isDiscordRegulator(message.author) is False:
+	if regulator.allow_regulation(message, message.author.id):
 		await gamerwords.slur_filter(message)
 
 	#get some basic stats of message sending

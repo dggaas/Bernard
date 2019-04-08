@@ -4,6 +4,8 @@ import bernard.analytics as analytics
 import bernard.common as common
 import bernard.discord as discord
 import bernard.journal as journal
+import bernard.regulator as regulator
+import bernard.gamerwords as gamerwords
 
 logger = logging.getLogger(__name__)
 logger.info("loading...")
@@ -19,6 +21,9 @@ async def on_message_edit(before, after):
         return
 
     if before.content != after.content:
+        if regulator.allow_regulation(after, after.author.id):
+            await gamerwords.slur_filter(after)
+
         if len(before.content) + len(after.content) < 1800:
             msg = "{0} **Caught Edited Message!**" \
                   "{1.author.mention} (Name:`{1.author}` ID:`{1.author.id}`) in {1.channel.mention} \n" \

@@ -52,12 +52,12 @@ async def get_allowed_groups():
 discord.bot.loop.create_task(get_allowed_groups())
 
 #use the same check across all commands to see if the regulator is allowed to preform the action based on permission, role, status
-def allow_regulation(ctx, target_id):
+def allow_regulation(message, target_id):
     #has to be a regulator+
-    if common.isDiscordRegulator(ctx.message.author) == True:
+    if common.isDiscordRegulator(message.author) == True:
         pass
     else:
-        logger.info("allow_regulation() attempted to invoke but was rejected for: no permission, Invoker: {}, Target:{}".format(ctx.message.author.id, target_id))
+        logger.debug("allow_regulation() attempted to invoke but was rejected for: no permission, Invoker: {}, Target:{}".format(message.author.id, target_id))
         return False
 
     #we need an ID to be able to work with, this should already be caught
@@ -65,18 +65,18 @@ def allow_regulation(ctx, target_id):
         return False
 
     #dont let the user try to play themselves
-    if target_id == ctx.message.author.id:
-        logger.info("allow_regulation() attempted to invoke but was rejected for: attempted self harm, Invoker: {}, Target:{}".format(ctx.message.author.id, target_id))
+    if target_id == message.author.id:
+        logger.debug("allow_regulation() attempted to invoke but was rejected for: attempted self harm, Invoker: {}, Target:{}".format(message.author.id, target_id))
         return False
 
     #if the user is an admin process it bypassing permissions
-    if common.isDiscordAdministrator(ctx.message.author) == True:
+    if common.isDiscordAdministrator(message.author) == True:
         return True
 
     #convert the target_id into a member object, or at least try. This is to cacluate if the user can be touched
     target_member = discord.default_server.get_member(target_id)
     if target_member is None:
-        logger.info("allow_regulation() bypassing action restriction since Member object cannot be created. Invoker: {}, Target: {}".format(ctx.message.author.id, target_id))
+        logger.debug("allow_regulation() bypassing action restriction since Member object cannot be created. Invoker: {}, Target: {}".format(message.author.id, target_id))
         return True
 
     #get the assigned role IDs
@@ -93,11 +93,11 @@ def allow_regulation(ctx, target_id):
     if len(allowed_set) == 0:
         return True
     else:
-        logger.info("allow_regulation() attempted to invoke but was rejected for: protected role, Invoker: {}, Target:{}".format(ctx.message.author.id, target_id))
+        logger.debug("allow_regulation() attempted to invoke but was rejected for: protected role, Invoker: {}, Target:{}".format(message.author.id, target_id))
         return False
 
     #failsafe to no if my bad logic fails
-    logger.info("allow_regulation() attempted to invoke but was rejected for: failsafe, Invoker: {}, Target:{}".format(ctx.message.author.id, target_id))
+    logger.debug("allow_regulation() attempted to invoke but was rejected for: failsafe, Invoker: {}, Target:{}".format(message.author.id, target_id))
     return False
 
 
@@ -124,7 +124,7 @@ async def warn(ctx, target, *, reason):
         await discord.bot.say("⚠️ Reason too long - please limit to 200 characters or less.")
         return
 
-    if allow_regulation(ctx, target_id):
+    if allow_regulation(ctx.message, target_id):
         # return what is happening in the same channel to alert the user
         await discord.bot.say("✔️ {} is warning {} with the reason of `{}`.".format(ctx.message.author.mention, target_member.mention, reason))
 
@@ -163,7 +163,7 @@ async def kick(ctx, target, *, reason):
         await discord.bot.say("⚠️ Reason too long - please limit to 200 characters or less.")
         return
 
-    if allow_regulation(ctx, target_id):
+    if allow_regulation(ctx.message, target_id):
         #return what is happening in the same channel to alert the user, wait 5 seconds and fire the kick command
         await discord.bot.say("✔️ {} is kicking {} with the reason of `{}`.".format(ctx.message.author.mention, target_member.mention, reason))
         await asyncio.sleep(5)
@@ -196,7 +196,7 @@ async def ban(ctx, target, *, reason):
         return
 
     #if the user cannot be banned
-    if allow_regulation(ctx, target_id) is False:
+    if allow_regulation(ctx.message, target_id) is False:
         await discord.bot.say("🛑 {} unable to moderate user. (no permissions)".format(ctx.message.author.mention))
         return
 
@@ -236,7 +236,7 @@ async def timedban(ctx, target, duration, *, reason):
         return
 
     #if the user cannot be banned
-    if allow_regulation(ctx, target_id) is False:
+    if allow_regulation(ctx.message, target_id) is False:
         await discord.bot.say("🛑 {0.message.author.mention} unable to moderate user. (no permissions)".format(ctx))
         return
 
@@ -425,7 +425,7 @@ async def silence(ctx, target, *, reason):
         await discord.bot.say("⚠️ Reason too long - please limit to 200 characters or less.")
         return
 
-    if allow_regulation(ctx, target_id) is False:
+    if allow_regulation(ctx.message, target_id) is False:
         await discord.bot.say("⚠️{} Permissions denied to regulate user".format(ctx.message.author.mention))
         return
 
@@ -445,7 +445,7 @@ async def unsilence(ctx, target):
     target_id = discord.get_targeted_id(ctx)
     target_member = discord.default_server.get_member(target_id)
 
-    if allow_regulation(ctx, target_id) is False:
+    if allow_regulation(ctx.message, target_id) is False:
         await discord.bot.say("⚠️{} Permissions denied to regulate user".format(ctx.message.author.mention))
         return
 

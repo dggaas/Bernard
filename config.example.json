@@ -56,6 +56,19 @@
 		}
 	},
 
+	"automod":{
+		"regex_banned_words":{
+			"testing_gamerword_filter_test": 500,
+			"nig(?:g?[gaeoi]?(?:er)?s?)?": 200,
+			"fag|fagging|faggitt|faggot|faggs|fagot|fagots|fags": 100,
+			"k[iy]+kes?|goyim": 100,
+			"tranny": 100,
+			"retar(d|ded|ds)": 80,
+			"autis[tm]?": 50,
+			"kill\\s*your(self|selves)|kys": 20
+		}
+	},
+
 	"invite_cleanup":{
 		"enable":1,
 		"interval":1200,

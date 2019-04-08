@@ -12,16 +12,7 @@ logger.info("loading...")
 
 def regex_scoring_msg(msg):
     # https://www.reddit.com/r/modhelp/comments/4g8lpo/would_you_be_willing_to_share_your_slur_filter_if/
-    regex_mapping = {
-        'testing_gamerword_filter_test': 500,
-        'n1gga|n1gger|nigg3r|n1gg3r|nigga|niggah|niggas|niggaz|nigger|niggers': 200,
-        'fag|fagging|faggitt|faggot|faggs|fagot|fagots|fags': 100,
-        'k[iy]+kes?|goyim': 100,
-        'tranny': 100,
-        'retar(d|ded|ds)': 80,
-        'autis[tm]?': 50,
-        'kill\\s*your(self|selves)|kys': 20
-    }
+    regex_mapping = config.cfg['automod']['regex_banned_words']
 
     msg_score = 0 # set the base score to 0
     for regex, weight in regex_mapping.items(): # loop through every regex case
