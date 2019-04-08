@@ -42,32 +42,25 @@ class subscriber_update:
         self.today = int(time.strftime('%j', time.gmtime(time.time())))
 
     def get_provider_to_discord_role(self):
-        if len(self.provider_data['features']) == 0:
+        if self.provider_data['subscription'] == None:
+            self.feature = "dgg"
+            self.roleid = config.cfg['subscriber']['features']['dgg']
+        elif self.provider_data['subscription']['tier'] == "4":
+            self.feature = "tier4"
+            self.roleid = config.cfg['subscriber']['features']['tier4']
+        elif self.provider_data['subscription']['tier'] == "3":
+            self.feature = "tier3"
+            self.roleid = config.cfg['subscriber']['features']['tier3']
+        elif self.provider_data['subscription']['tier'] == "2":
+            self.feature = "tier2"
+            self.roleid = config.cfg['subscriber']['features']['tier2']
+        elif self.provider_data['subscription']['tier'] == "1":
+            self.feature = "tier1"
+            self.roleid = config.cfg['subscriber']['features']['tier1']
+        else:
             self.feature = "pleb"
             self.roleid = None
-            return
 
-        #work our way from the biggest to smallest, give the highest role we find
-        for feature in self.provider_data['features']:
-            if feature == config.cfg['subscriber']['features']['tier4']['provided']:
-                self.feature = "tier4"
-                self.roleid = config.cfg['subscriber']['features']['tier4']['roleid']
-                continue
-            elif feature == config.cfg['subscriber']['features']['tier3']['provided']:
-                self.feature = "tier3"
-                self.roleid = config.cfg['subscriber']['features']['tier3']['roleid']
-                continue
-            elif feature == config.cfg['subscriber']['features']['tier2']['provided']:
-                self.feature = "tier2"
-                self.roleid = config.cfg['subscriber']['features']['tier2']['roleid']
-                continue
-            elif feature == config.cfg['subscriber']['features']['tier1']['provided']:
-                self.feature = "tier1"
-                self.roleid = config.cfg['subscriber']['features']['tier1']['roleid']
-                continue
-            else:
-                self.feature = "pleb"
-                self.roleid = None
 
     async def update_subscriber(self):
         #ask for the data from the provider (destinygg)
@@ -83,8 +76,12 @@ class subscriber_update:
             return
 
         #find when the subs expire, and pad it by the configured grace period
-        self.expires = time.mktime(time.strptime(self.provider_data['subscription']['end'], config.cfg['subscriber']['provider']['timestamp']))
-        self.expires_day = int(time.strftime('%j', time.gmtime(self.expires))) + config.cfg['subscriber']['settings']['grace_days']
+        if self.feature == "dgg":
+            self.expires = time.time() + int(config.cfg['subscriber']['settings']['verified_days'] * 86400)
+            self.expires_day = time.strftime('%j') + config.cfg['subscriber']['settings']['verified_days']
+        else:
+            self.expires = time.mktime(time.strptime(self.provider_data['subscription']['end'], config.cfg['subscriber']['provider']['timestamp']))
+            self.expires_day = int(time.strftime('%j', time.gmtime(self.expires))) + config.cfg['subscriber']['settings']['grace_days']
 
         #check the db to see if this is an update or an insert
         database.cursor.execute('SELECT * FROM subscribers WHERE userid=%s', (self.user.id,))
@@ -216,8 +213,8 @@ def subscriber_feature_roles():
     logger.info("Building list of subscriber role IDs via subscriber_feature_roles()")
     global SUBCRIBER_FEATURES
     SUBCRIBER_FEATURES = []
-    for feature in config.cfg['subscriber']['features']:
-        SUBCRIBER_FEATURES.append(config.cfg['subscriber']['features'][feature]['roleid'])
+    for k,v in config.cfg['subscriber']['features'].items():
+        SUBCRIBER_FEATURES.append(v)
 
 async def updater_background():
     await discord.bot.wait_until_ready()
