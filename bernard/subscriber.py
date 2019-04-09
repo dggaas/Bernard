@@ -78,7 +78,7 @@ class subscriber_update:
         #find when the subs expire, and pad it by the configured grace period
         if self.feature == "dgg":
             self.expires = time.time() + int(config.cfg['subscriber']['settings']['verified_days'] * 86400)
-            self.expires_day = time.strftime('%j') + config.cfg['subscriber']['settings']['verified_days']
+            self.expires_day = int(time.strftime('%j')) + config.cfg['subscriber']['settings']['verified_days']
         else:
             self.expires = time.mktime(time.strptime(self.provider_data['subscription']['end'], config.cfg['subscriber']['provider']['timestamp']))
             self.expires_day = int(time.strftime('%j', time.gmtime(self.expires))) + config.cfg['subscriber']['settings']['grace_days']

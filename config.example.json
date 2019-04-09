@@ -113,7 +113,8 @@
 			"timestamp":"%%Y-%%m-%%dT%%H:%%M:%%S+0000"
 		},
 		"settings":{
-			"grace_days":1
+			"grace_days":1,
+			"verified_days":14
 		},
 		"updater_background":{
 			"enable":1,
