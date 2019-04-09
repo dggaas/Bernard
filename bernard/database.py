@@ -12,6 +12,7 @@ logger.info("loading...")
 try:
     logger.info("Attempting to establish DB connection to {0[server]} to database {0[database]}".format(config.cfg['bernard']['database']))
     connection = mariadb.connect(
+        use_unicode=True,
         host=config.cfg['bernard']['database']['server'],
         user=config.cfg['bernard']['database']['username'],
         password=config.cfg['bernard']['database']['password'],
