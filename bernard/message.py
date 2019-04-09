@@ -31,7 +31,7 @@ async def on_message(message):
 		return
 
 	# start looking for gamer words / banned slurs
-	if regulator.allow_regulation(message, message.author.id):
+	if regulator.allow_regulation(message, discord.bot.user.id):
 		await gamerwords.slur_filter(message)
 
 	#get some basic stats of message sending
