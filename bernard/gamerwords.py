@@ -61,6 +61,38 @@ def account_age_scoring(age):
 
     return 0
 
+def account_join_time(account_id):
+    database.cursor.execute('SELECT * from journal_events WHERE userid=%s AND event = \'ON_MEMBER_JOIN\' ORDER BY `time` DESC LIMIT 1', (account_id,))
+    dbres = database.cursor.fetchone()
+    if dbres is None:
+        return 0
+    else:
+        time_since_join = int((time.time() - dbres['time']) / 60)
+        return member_age_scoring(time_since_join)
+
+
+def previous_automod_scoring(account_id):
+    cutoff = int(time.time() - config.cfg['automod']['forgiveness_days']*86400)
+    database.cursor.execute('SELECT * from automod_gamerwords WHERE id_targeted=%s AND time>%s', (account_id, cutoff))
+    dbres = database.cursor.fetchall()
+    if len(dbres) == 0:
+        return 0
+
+    total_score = 0
+    for action in dbres:
+        # get how many days ago the infraction was
+        days_ago_action = round((time.time() - action['time']) / 86400, 2)
+
+        # get the mulitiplier based on the age, age_multiplier = 1 if just happened, age_multiplier = 0.01 if about to fall off
+        age_multiplier = (config.cfg['automod']['forgiveness_days'] - days_ago_action) / config.cfg['automod']['forgiveness_days']
+
+        # total up the total amount of points "awared" without the multiplier
+        weighted_score = action['score_regex'] * age_multiplier
+        total_score += weighted_score
+        #print(days_ago_action, age_multiplier, weighted_score, action['score_regex']) # this is such a shitshow ill keep this for later
+
+    return int(total_score)
+
 async def slur_filter(message):
     # get the score of the message contents
     msg_score = regex_scoring_msg(message.content)
@@ -74,13 +106,10 @@ async def slur_filter(message):
     account_age_score = account_age_scoring(account_min_old)
 
     # and the amount of time in the discord
-    database.cursor.execute('SELECT * from journal_events WHERE userid=%s AND event = \'ON_MEMBER_JOIN\' ORDER BY `time` DESC LIMIT 1', (message.author.id,))
-    dbres = database.cursor.fetchone()
-    if dbres is None:
-        account_member_score = 0
-    else:
-        time_since_join = int((time.time() - dbres['time']) / 60)
-        account_member_score = member_age_scoring(time_since_join)
+    account_member_score = account_join_time(message.author.id)
+
+    # and how many times they have recently been AUTomodded
+    account_previous_score = previous_automod_scoring(message.author.id)
 
     multiplier = account_age_score + account_member_score
     if multiplier is not 0:
@@ -90,7 +119,7 @@ async def slur_filter(message):
 
     # log the action to the database
     database.cursor.execute('INSERT INTO automod_gamerwords'
-                            '(score_final, score_regex, multiply_age_member, multiply_age_account, time, id_targeted, message)'
-                            'VALUES (%s,%s,%s,%s,%s,%s,%s)',
-                            (final_score, msg_score, account_member_score, account_age_score, time.time(), message.author.id, message.content))
+                            '(score_final, score_regex, score_prev_infractions, multiply_age_member, multiply_age_account, time, id_targeted, message)'
+                            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s)',
+                            (final_score, msg_score, account_previous_score, account_member_score, account_age_score, time.time(), message.author.id, message.content))
     database.connection.commit()

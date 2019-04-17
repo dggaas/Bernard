@@ -66,7 +66,8 @@
 			"retar(d|ded|ds)": 80,
 			"autis[tm]?": 50,
 			"kill\\s*your(self|selves)|kys": 20
-		}
+		},
+		"forgiveness_days":14
 	},
 
 	"invite_cleanup":{
