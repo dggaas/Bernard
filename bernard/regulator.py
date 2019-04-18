@@ -100,6 +100,21 @@ def allow_regulation(message, target_id):
     logger.debug("allow_regulation() attempted to invoke but was rejected for: failsafe, Invoker: {}, Target:{}".format(message.author.id, target_id))
     return False
 
+def allow_automod(msg):
+    target_roles = []
+    for role in msg.author.roles:
+        target_roles.append(role.id)
+
+    #convert the lists to sets
+    target_set = set(target_roles)
+    untouchable_set = set(untouchable_roles)
+
+    allowed_set = untouchable_set.intersection(target_set)
+
+    if len(allowed_set) == 0:
+        return True
+    else:
+        return False
 
 # formally warn a user, must supply a user mention and string longer than 4 chars to land
 @discord.bot.command(pass_context=True, no_pm=True, hidden=True)
