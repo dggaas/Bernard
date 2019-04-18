@@ -29,6 +29,7 @@ import bernard.housekeeping
 import bernard.antispam
 import bernard.regulator
 import bernard.gamerwords
+import bernard.antiraid
 
 #entitlement modules
 import bernard.subscriber

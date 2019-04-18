@@ -39,6 +39,11 @@
 		"time_range_max_mins":525600
 	},
 
+	"antiraid": {
+		"time_range_min_mins":5,
+		"time_range_max_mins":1440
+	},
+
 	"regulators":{
 		"unban_grace_mins":4320
 	},
