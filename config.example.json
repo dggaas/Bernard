@@ -88,6 +88,10 @@
 			"enable":1,
 			"lowest_role_blocked":"everyone"
 		},
+		"inviteban":{
+			"enable":1,
+			"protected_invites":["abB123Z","d3sT1NY"]
+		},
 		"blacklisted_domains":{
 			"enable":1
 		},

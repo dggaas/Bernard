@@ -306,14 +306,24 @@ async def inviteban(ctx, target, *, reason):
     if common.isDiscordRegulator(ctx.message.author) != True:
         return
 
+    # allow inviteban to be disabled
+    if config.cfg['auditing']['inviteban']['enable'] == 0:
+        await discord.bot.say("⚠️ {0.message.author.mention} !inviteban is disabled in config.json.".format(ctx))
+        return
+
+    # make sure the invite is not protected, useful for non-partner servers
+    if target in config.cfg['auditing']['inviteban']['protected_invites']:
+        await discord.bot.say("⚠️ {0.message.author.mention} Invite is protected in config.json and unable to be banned.".format(ctx))
+        return
+
     # ban reason has to be a reasonable length
-    if len(reason) > 200:
-        await discord.bot.say("⚠️ Invite ban reason must be longer than 4 characters. `!inviteban inviteCode reason goes here`")
+    if len(reason) < 4:
+        await discord.bot.say("⚠️ {0.message.author.mention} Invite ban reason must be longer than 4 characters. `!inviteban inviteCode reason goes here`.".format(ctx))
         return
 
     # ban reason has to be a reasonable length
     if len(reason) > 200:
-        await discord.bot.say("⚠️ Reason too long - please limit to 200 characters or less.")
+        await discord.bot.say("⚠️ {0.message.author.mention} Reason too long - please limit to 200 characters or less.".format(ctx))
         return
 
     #get anyone who joined via the invite
@@ -322,7 +332,7 @@ async def inviteban(ctx, target, *, reason):
 
     #if there is not anyone, dont even do anything
     if len(invitees) == 0 or target.lower() == "none":
-        await discord.bot.say("⚠️ {} Invalid invite code! 0 members joined via internal journal. Retype invite or bother Cake.".format(ctx.message.author.mention))
+        await discord.bot.say("⚠️ {0.message.author.mention} Invalid invite code! 0 members joined via internal journal. Retype invite? (case sensitive)".format(ctx))
         return
 
     #get the invite data, make sure it is valid and then get who made it. They purge first.
@@ -330,7 +340,7 @@ async def inviteban(ctx, target, *, reason):
         invite = await discord.bot.get_invite(target)
     except Exception as e:
         invite = None
-        await discord.bot.say("⚠️ {} unable to look up invite code: {} for ownership! Moving on to blind mode!".format(ctx.message.author.mention, e))
+        await discord.bot.say("⚠️ {0.message.author.mention} unable to look up invite code: {} for ownership! Moving on to blind mode!".format(ctx, e))
 
     #ban the inviter if we know who they are
     if invite is not None:
