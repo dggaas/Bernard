@@ -45,8 +45,9 @@ async def get_allowed_groups():
     untouchable_roles.remove(config.cfg['discord']['twitch_managed_role'])
 
     #remove destinygg subscriber roles
-    for k,v in config.cfg['subscriber']['features'].items():
-        untouchable_roles.remove(v)
+    if config.cfg['subscriber']['enable']:
+        for k,v in config.cfg['subscriber']['features'].items():
+            untouchable_roles.remove(v)
 
 #this starts get_allowed_groups() at startup, but requires the bot to be ready
 discord.bot.loop.create_task(get_allowed_groups())
