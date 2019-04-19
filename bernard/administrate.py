@@ -3,7 +3,6 @@ import bernard.common as common
 import bernard.discord as discord
 import bernard.database as database
 import bernard.analytics as analytics
-import bernard.crypto as crypto
 import sys
 import os
 import subprocess
