@@ -15,7 +15,6 @@ import bernard.journal
 #chat modules
 import bernard.hello
 import bernard.administrate
-import bernard.crypto
 
 #moderation modules
 import bernard.message

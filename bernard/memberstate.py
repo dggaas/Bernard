@@ -59,8 +59,9 @@ async def on_member_join(user):
                 await discord.bot.kick(user)
 
     #do a subscriber check and assign any roles on joining
-    check_sub = subscriber.subscriber_update(user)
-    await check_sub.update_subscriber()
+    if config.cfg['subscriber']['enable']:
+        check_sub = subscriber.subscriber_update(user)
+        await check_sub.update_subscriber()
 
     #capture the event in the internal log
     journal.update_journal_event(module=__name__, event="ON_MEMBER_JOIN", userid=user.id, contents="{0.name}#{0.discriminator}".format(user))

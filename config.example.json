@@ -98,16 +98,8 @@
 		}
 	},
 
-	"chat":{
-		"crypto":{
-			"channel":"382400958434377728",
-			"cmc_limit":1100,
-			"background_update_interval":10800,
-			"background_update_enable":1
-		}
-	},
-
 	"subscriber":{
+		"enable":0,
 		"provider":{
 			"endpoint":"https://www.destiny.gg/auth/info",
 			"privatekey":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

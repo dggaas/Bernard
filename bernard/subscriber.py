@@ -289,4 +289,5 @@ if config.cfg['subscriber']['auditor_background']['enable']:
 if config.cfg['subscriber']['database_background']['enable']:
     discord.bot.loop.create_task(database_background())
 
-subscriber_feature_roles()
+if config.cfg['subscriber']['enable']:
+    subscriber_feature_roles()
