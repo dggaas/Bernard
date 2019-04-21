@@ -67,6 +67,15 @@
 			"autis[tm]?": 50,
 			"kill\\s*your(self|selves)|kys": 20
 		},
+		"threshold":{
+			"WARN_SOFT":80,
+			"WARN_HARD":150,
+			"KICK":200,
+			"BAN_1H":300,
+			"BAN_24H":500,
+			"BAN_7D":800,
+			"BAN_PERMA":1000
+		},
 		"forgiveness_days":14
 	},
 

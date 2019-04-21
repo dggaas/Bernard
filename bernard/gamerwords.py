@@ -2,10 +2,13 @@ import bernard.config as config
 import bernard.common as common
 import bernard.discord as discord
 import bernard.database as database
+import bernard.journal as journal
+import bernard.scheduler as scheduler
 import datetime
 import logging
 import re
 import time
+import asyncio
 
 logger = logging.getLogger(__name__)
 logger.info("loading...")
@@ -93,6 +96,18 @@ def previous_automod_scoring(account_id):
 
     return int(total_score)
 
+def get_punishment_tier(score):
+    threshold_map = config.cfg['automod']['threshold']
+
+    # handle the higher tier punishments
+    for punishment_map, score_map in threshold_map.items():
+        if score > score_map:
+            logger.info("get_punishment_tier(): PUNISHEMENT TIER: {}".format(punishment_map))
+            return punishment_map
+
+    # failsafe to a soft warning, also catches when the score is less than the soft warn
+    return "WARN_SOFT"
+
 async def slur_filter(message):
     # get the score of the message contents
     msg_score = regex_scoring_msg(message.content)
@@ -113,13 +128,73 @@ async def slur_filter(message):
 
     multiplier = account_age_score + account_member_score
     if multiplier is not 0:
-        final_score = msg_score * multiplier
+        final_score = (msg_score * multiplier) + account_previous_score
     else:
-        final_score = msg_score
+        final_score = msg_score + account_previous_score
+
+    if final_score == 0:
+        return # fail safe if the score is 0
+
+    # if we made it here, time to push some punishments
+    await discord.bot.delete_message(message) # delete the message from Discord
+    journal.update_journal_event(module=__name__, event="ON_MESSAGE_DELETE_AUTOMOD", userid=message.author.id, eventid=message.id, contents=message.content) # update the users journal
+
+    # decide how hard to punish the user, and punish them
+    punishment = get_punishment_tier(final_score)
+
+    # alert the user to what they have done
+    await discord.bot.send_message(message.channel, "{0.author.mention} is being automoderated with enforcement **{1}** for use of GAMER™ words. Score:`{2}`".format(message, punishment, final_score))
+    await asyncio.sleep(2) # sleep for 2 seconds until the ban is fired
+
+    if punishment == "BAN_PERMA":
+        punishment_journal_type = "BAN_MEMBER"
+        ban = await common.ban_verbose(message.author, "AUTOMOD BAN_PERMA SCORE:{}".format(final_score))
+        if res is False:
+            await discord.bot.send_message(message.channel, "❓ Something's fucked! Unable to issue ban to Discord API. Bother <@{}>".format(config.cfg['bernard']['owner']))
+
+    elif punishment == "BAN_24H" or punishment == "BAN_1H":
+        punishment_journal_type = "BAN_MEMBER"
+        ban = await common.ban_verbose(message.author, "AUTOMOD {0} SCORE:{1}".format(punishment, final_score))
+        if ban is False:
+            await discord.bot.send_message(message.channel, "❓ Something's fucked! Unable to issue ban to Discord API. Bother <@{}>".format(config.cfg['bernard']['owner']))
+        else:
+            if punishment == "BAN_24H":
+                time_to_fire = time.time() + 86400
+            else:
+                time_to_fire = time.time() + 3600
+
+            # don't forget to set the unban event
+            scheduler.set_future_task(
+                invoker=discord.bot.user.id,
+                target=message.author.id,
+                channel=message.channel.id,
+                timestamp=time_to_fire,
+                event="Automod (Gamerwords) SCORE:{0}".format(final_score),
+                msg=reason)
+
+    elif punishment == "KICK":
+        punishment_journal_type = "KICK_MEMBER"
+        await discord.bot.kick(message.author)
+
+    elif punishment == "WARN_HARD":
+        punishment_journal_type = "WARN_MEMBER"
+        await discord.bot.send_message(message.channel, "{0.author.mention} Please review the rules! Your message is not allowed and has been removed. A rapsheet warning has been issued.".format(message, punishment, final_score))
+    else:
+        punishment_journal_type = None
+        await discord.bot.send_message(message.channel, "{0.author.mention} Please review the rules! Your message is not allowed and has been removed. Next time I may not be as nice. (unoffical warning)".format(message, punishment, final_score))
+
+    # update the regulator log
+    if punishment_journal_type is not None:
+        journal.update_journal_regulator(
+            invoker=discord.bot.user.id,
+            target=message.author.id,
+            eventdata="Automod POLICY:{0} SCORE:{1}".format(punishment, final_score),
+            action=punishment_journal_type,
+            messageid=message.id)
 
     # log the action to the database
     database.cursor.execute('INSERT INTO automod_gamerwords'
-                            '(score_final, score_regex, score_prev_infractions, multiply_age_member, multiply_age_account, time, id_targeted, message)'
-                            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s)',
-                            (final_score, msg_score, account_previous_score, account_member_score, account_age_score, time.time(), message.author.id, message.content))
+                            '(score_final, score_regex, score_prev_infractions, multiply_age_member, multiply_age_account, action, time, id_targeted, message)'
+                            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                            (final_score, msg_score, account_previous_score, account_member_score, account_age_score, punishment, time.time(), message.author.id, message.content))
     database.connection.commit()
