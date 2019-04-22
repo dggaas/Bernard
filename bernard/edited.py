@@ -13,12 +13,16 @@ logger.info("loading...")
 IGNORE_IDS = []
 
 
-# new member to the server. message = discord.Message
+# new member to the server. before, after = discord.Message
 @discord.bot.event
 async def on_message_edit(before, after):
     msgProcessStart = analytics.getEventTime()
     if common.isDiscordMainServer(before.server) is not True:
         return
+
+    # start looking for gamer words / banned slurs
+    if regulator.allow_automod(after):
+        await gamerwords.slur_filter(after)
 
     if before.content != after.content:
         if regulator.allow_regulation(after, after.author.id):
