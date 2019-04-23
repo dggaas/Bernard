@@ -3,8 +3,7 @@ import bernard.common as common
 import bernard.discord as discord
 import bernard.auditing as auditing
 import bernard.analytics as analytics
-#import bernard.antispam as antispam
-import bernard.gamerwords as gamerwords
+import bernard.automod_gamerwords as gamerwords
 import bernard.regulator as regulator
 import logging
 

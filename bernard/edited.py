@@ -5,7 +5,7 @@ import bernard.common as common
 import bernard.discord as discord
 import bernard.journal as journal
 import bernard.regulator as regulator
-import bernard.gamerwords as gamerwords
+import bernard.automod_gamerwords as gamerwords
 
 logger = logging.getLogger(__name__)
 logger.info("loading...")

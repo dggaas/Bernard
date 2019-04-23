@@ -26,7 +26,9 @@ import bernard.edited
 import bernard.invites
 import bernard.housekeeping
 import bernard.regulator
-import bernard.gamerwords
+
+# Automoderation modules
+import bernard.automod_gamerwords
 
 #entitlement modules
 import bernard.subscriber
