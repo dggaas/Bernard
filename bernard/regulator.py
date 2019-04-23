@@ -237,7 +237,7 @@ async def ban(ctx, target, *, reason):
     else:
         await discord.bot.say("🛑 {} unable to moderate user. Target did not resolve to a valid Discord Member.".format(ctx.message.author.mention))
 
-@discord.bot.command(pass_context=True, no_pm=True, hidden=True)
+@discord.bot.command(pass_context=True, no_pm=True, hidden=True, aliases=['timeban'])
 async def timedban(ctx, target, duration, *, reason):
     if common.isDiscordRegulator(ctx.message.author) != True:
         return
