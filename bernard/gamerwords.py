@@ -13,6 +13,27 @@ import asyncio
 logger = logging.getLogger(__name__)
 logger.info("loading...")
 
+# debug command to dump last events
+@discord.bot.command(pass_context=True, no_pm=True, hidden=True)
+async def gamerword_debug(ctx, target):
+    if not common.isDiscordRegulator(ctx.message.author):
+        return
+
+    target_id = discord.get_targeted_id(ctx)
+
+    # get the forgiveness value and get how far back we should look
+    cutoff = int(time.time() - config.cfg['automod']['forgiveness_days'] * 86400)
+    database.cursor.execute('SELECT score_final,score_regex,score_prev_infractions,multiply_age_member,multiply_age_account,action from automod_gamerwords WHERE id_targeted=%s AND time>%s', (target_id, cutoff))
+    dbres = database.cursor.fetchall()
+    if len(dbres) == 0:
+        await discord.bot.say("{0.message.author.mention} no actions found in the last {1[automod][forgiveness_days]} days.".format(ctx, config.cfg))
+    else:
+        table_result = common.dbtable_to_strtable(dbres)
+        if table_result:
+            await discord.bot.say("Last {0[automod][forgiveness_days]} days of automoderation against ID:{1} ```{2}```".format(config.cfg, target_id, table_result))
+        else:
+            await discord.bot.say("{0.message.author.mention} unable to retrieve table, result too big or something broke.".format(ctx))
+
 def regex_scoring_msg(msg):
     # https://www.reddit.com/r/modhelp/comments/4g8lpo/would_you_be_willing_to_share_your_slur_filter_if/
     regex_mapping = config.cfg['automod']['regex_banned_words']

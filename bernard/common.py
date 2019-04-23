@@ -4,6 +4,7 @@ import time
 import json
 import aiohttp
 import logging
+from tabulate import tabulate
 
 logger = logging.getLogger(__name__)
 logger.info("loading...")
@@ -114,6 +115,23 @@ def target_user(ctx, target=None):
         return snowflake
     else:
         return None
+
+# input a List from the database query, get a string formatted table with headers safe for Discord
+def dbtable_to_strtable(dbres):
+    columns = []
+    columns.append(list(dbres[0].keys())) #this gets the header for tabulate
+
+    for res in dbres:
+        columns.append(list(res.values())) #this builds the rows of the results
+
+    #tabulate this into a string https://pypi.python.org/pypi/tabulate
+    postdb = tabulate(columns, headers="firstrow")
+
+    #check the length
+    if len(postdb) >= 1990:
+        return False
+    else:
+        return postdb
 
 async def getJSON(url, tmout=5, hdrs=None):
     url_safe = url.replace(config.cfg['subscriber']['provider']['privatekey'], "<HIDDEN>")

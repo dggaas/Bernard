@@ -50,21 +50,13 @@ async def sql(ctx, *, sql: str):
             await discord.bot.say("```DB returned zero results.```")
             return
 
-        columns = []
-        columns.append(list(dbres[0].keys())) #this gets the header for tabulate
-
-        for res in dbres:
-            columns.append(list(res.values())) #this builds the rows of the results
-
-        #tabulate this into a string https://pypi.python.org/pypi/tabulate
-        postdb = tabulate(columns, headers="firstrow")
-
-        #check the length
-        if len(postdb) >= 1990:
+        # format to human readable format
+        table_result = common.dbtable_to_strtable(dbres)
+        if table_result:
+            await discord.bot.say("```{0}```".format(table_result))
+        else:
             await discord.bot.say("```DB returned a result that is {} characters over the Discord limit```".format(1990 - len(dbres)))
-            return
 
-        await discord.bot.say("```{0}```".format(postdb))
 
 
 #get python version and discordpy version
