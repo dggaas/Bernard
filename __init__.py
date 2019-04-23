@@ -25,7 +25,6 @@ import bernard.deleted
 import bernard.edited
 import bernard.invites
 import bernard.housekeeping
-import bernard.antispam
 import bernard.regulator
 import bernard.gamerwords
 
